@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { projects } from '../data/projects.js';
+// import { projects } from '../data/projects.js';
+import {projects} from '../data/temp/projects_sample_1'
 
 const CATEGORY_COLORS = {
   'Sorting': 'text-blue-400',

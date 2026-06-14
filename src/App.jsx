@@ -9,7 +9,31 @@ import FeedbackPanel from './components/FeedbackPanel.jsx';
 import TestResults from './components/TestResults.jsx';
 import PatchModal from './components/PatchModal.jsx';
 
+
 const API_BASE = 'https://sajithanuradha890-fyp-fastapi-backend.hf.space';
+
+function formatApiError(errorData, fallbackMessage) {
+  const detail = errorData?.detail;
+
+  if (Array.isArray(detail)) {
+    return detail
+      .map((item) => {
+        if (typeof item === 'string') return item;
+        if (item?.msg) {
+          const location = Array.isArray(item.loc) ? item.loc.join('.') : item.loc;
+          return location ? `${location}: ${item.msg}` : item.msg;
+        }
+        return null;
+      })
+      .filter(Boolean)
+      .join(' | ');
+  }
+
+  if (typeof detail === 'string') return detail;
+  if (typeof errorData?.message === 'string') return errorData.message;
+
+  return fallbackMessage;
+}
 
 function Toast({ message, type }) {
   return (
@@ -77,11 +101,12 @@ export default function App() {
   const currentPatchedCode = selectedProject ? patchedProjects.get(selectedProject.id) : null;
 
   const handleGeneratePatch = useCallback(
-    async (feedback) => {
+    async (feedback = '') => {
       if (!selectedProject || !selection) return;
 
       setIsLoading(true);
       setApiError(null);
+      const trimmedFeedback = feedback.trim();
 
       const payload = {
         fileName: selectedProject.fileName,
@@ -95,8 +120,9 @@ export default function App() {
           before: selection.before,
           after: selection.after,
         },
-        naturalLanguageFeedback: feedback,
+        naturalLanguageFeedback: trimmedFeedback || "Fix this issue",
       };
+
 
       try {
         const response = await axios.post(`${API_BASE}/generate-patch`, payload, {
@@ -107,13 +133,11 @@ export default function App() {
         setShowPatchModal(true);
         showToast('Patch generated successfully!', 'success');
       } catch (err) {
-        const msg =
-          err.response?.data?.detail ||
-          err.response?.data?.message ||
+        const fallbackMessage =
           (err.code === 'ECONNABORTED'
             ? 'Request timed out. The backend may be starting up — try again.'
-            : null) ||
-          `Failed to generate patch: ${err.message}`;
+            : null) || `Failed to generate patch: ${err.message}`;
+        const msg = formatApiError(err.response?.data, fallbackMessage);
         setApiError(msg);
         showToast(msg, 'error');
       } finally {
