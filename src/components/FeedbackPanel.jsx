@@ -12,7 +12,7 @@ export default function FeedbackPanel({ project, selection, onGeneratePatch, isL
   const [feedback, setFeedback] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const canSubmit = project && selection && feedback.trim().length > 0 && !isLoading;
+  const canSubmit = project && selection && !isLoading;
 
   const handleSubmit = () => {
     if (!canSubmit) return;
@@ -97,8 +97,8 @@ export default function FeedbackPanel({ project, selection, onGeneratePatch, isL
             onKeyDown={handleKeyDown}
             placeholder={
               selection
-                ? `Describe what's wrong with lines ${selection.startLine}–${selection.endLine} and how to fix it...\n\nExample: "Line ${project?.functionInfo?.bugLine || 'X'} uses the wrong variable — it should use temp instead of arr[j]"`
-                : 'First select the buggy lines in the code editor, then describe the fix here...'
+                ? `Optional: describe what's wrong with lines ${selection.startLine}–${selection.endLine} and how to fix it...\n\nExample: "Line ${project?.functionInfo?.bugLine || 'X'} uses the wrong variable — it should use temp instead of arr[j]"`
+                : 'First select the buggy lines in the code editor. Feedback is optional.'
             }
             disabled={!project}
             className="flex-1 resize-none bg-ide-bg border border-ide-border rounded-lg p-3 text-xs font-mono text-ide-text placeholder-ide-muted/60 focus:outline-none focus:border-ide-accent/60 transition-colors leading-relaxed disabled:opacity-50 disabled:cursor-not-allowed"
@@ -167,7 +167,7 @@ export default function FeedbackPanel({ project, selection, onGeneratePatch, isL
         {/* Hint */}
         {!selection && project && (
           <p className="text-xs text-ide-muted text-center shrink-0">
-            💡 Tip: Select code in the editor first, then describe what to fix
+            Tip: Select code in the editor first. Feedback is optional.
           </p>
         )}
       </div>
